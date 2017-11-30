@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Security.Policy;
 using System.Security;
+using System.Runtime.InteropServices;
 
 public class MapGenerator : MonoBehaviour {
 
@@ -39,18 +40,20 @@ public class MapGenerator : MonoBehaviour {
 			SmoothMap();
 		}
 
-		int borderSize = 5;
+		int borderSize = 1;
 		int[,] borderMap = new int[width + borderSize * 2, height + borderSize * 2];
 		for (int x = 0; x < borderMap.GetLength(0); x++) {
 			for (int y = 0; y < borderMap.GetLength(1); y++) {
-//				if (x > ){
-//					
-//				}
+				if (x >= borderSize && x < width + borderSize && y >= borderSize && y < height + borderSize) {
+					borderMap[x, y] = map[x - borderSize, y - borderSize];
+				} else {
+					borderMap[x, y] = 1;
+				}
 			}
 		}
 
 		MeshGenerator meshGen = GetComponent<MeshGenerator>();
-		meshGen.GenerateMesh(map, 1);
+		meshGen.GenerateMesh(borderMap, 1);
 	}
 
 
