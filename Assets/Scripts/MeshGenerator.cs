@@ -5,10 +5,12 @@ using System.Runtime.InteropServices;
 using UnityEditor;
 using System.Security.Cryptography.X509Certificates;
 using System.Configuration;
+using NUnit.Framework;
 
 public class MeshGenerator : MonoBehaviour {
 
 	#region classes
+
 	public class SquareGrid{
 
 
@@ -80,7 +82,7 @@ public class MeshGenerator : MonoBehaviour {
 
 
 		public Vector3 position;
-		public int vertexIndex;
+		public int vertexIndex = -1;
 
 
 		public Node(Vector3 _pos){
@@ -102,15 +104,18 @@ public class MeshGenerator : MonoBehaviour {
 			right = new Node(position + Vector3.right * (squareSize / 2.0f));
 		}
 	}
+
 	#endregion	
 
-
+	#region parametrs
 	public SquareGrid squareGrid;
 
 
 	private List<Vector3> vertices;
 	private List<int> triangles;
+	#endregion
 
+	#region methods
 
 	private void TriangulateSquare(Square square){
 		switch (square.configuration) {
@@ -119,13 +124,13 @@ public class MeshGenerator : MonoBehaviour {
 
 			// 1 points
 			case 1:
-				MeshFromPoints(square.centreBottom, square.bottomLeft, square.centreLeft);
+				MeshFromPoints(square.centreLeft, square.centreBottom, square.bottomLeft);
 				break;
 			case 2:
-				MeshFromPoints(square.centreRight, square.bottomRight, square.centreBottom);
+				MeshFromPoints(square.bottomRight, square.centreBottom, square.centreRight);
 				break;
 			case 4:
-				MeshFromPoints(square.centreTop, square.topRight, square.centreRight);
+				MeshFromPoints(square.topRight, square.centreRight, square.centreTop);
 				break;
 			case 8:
 				MeshFromPoints(square.topLeft, square.centreTop, square.centreLeft);
@@ -153,7 +158,7 @@ public class MeshGenerator : MonoBehaviour {
 			
 			// 3 points
 			case 7:
-				MeshFromPoints(square.centreTop, square.topRight, square.bottomLeft, square.bottomRight, square.centreLeft);
+				MeshFromPoints(square.centreTop, square.topRight, square.bottomRight, square.bottomLeft, square.centreLeft);
 				break;
 			case 11:
 				MeshFromPoints(square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.bottomLeft);
@@ -175,44 +180,87 @@ public class MeshGenerator : MonoBehaviour {
 
 
 	private void MeshFromPoints(params Node[] points){
+		AssignVertices(points);
 
+		if (points.Length >= 3) {
+			CreateTriangle(points[0], points[1], points[2]);
+		}
+		if (points.Length >= 4) {
+			CreateTriangle(points[0], points[2], points[3]);
+		}
+		if (points.Length >= 5) {
+			CreateTriangle(points[0], points[3], points[4]);
+		}
+		if (points.Length >= 6) {
+			CreateTriangle(points[0], points[4], points[5]);
+		}
 	}
 
 
-	private void OnDrawGizmos(){
-		for (int x = 0; x < squareGrid.squares.GetLength(0); x++) {
-			for (int y = 0; y < squareGrid.squares.GetLength(1); y++) {
-				
-				Gizmos.color = (squareGrid.squares[x, y].topLeft.active) ? Color.black : Color.white;
-				Gizmos.DrawCube(squareGrid.squares[x, y].topLeft.position, Vector3.one * 0.4f);
-
-				Gizmos.color = (squareGrid.squares[x, y].topRight.active) ? Color.black : Color.white;
-				Gizmos.DrawCube(squareGrid.squares[x, y].topRight.position, Vector3.one * 0.4f);
-
-				Gizmos.color = (squareGrid.squares[x, y].bottomLeft.active) ? Color.black : Color.white;
-				Gizmos.DrawCube(squareGrid.squares[x, y].bottomLeft.position, Vector3.one * 0.4f);
-
-				Gizmos.color = (squareGrid.squares[x, y].bottomRight.active) ? Color.black : Color.white;
-				Gizmos.DrawCube(squareGrid.squares[x, y].bottomRight.position, Vector3.one * 0.4f);
-
-				Gizmos.color = Color.gray;
-				Gizmos.DrawCube(squareGrid.squares[x, y].centreTop.position, Vector3.one * 0.15f);
-				Gizmos.DrawCube(squareGrid.squares[x, y].centreRight.position, Vector3.one * 0.15f);
-				Gizmos.DrawCube(squareGrid.squares[x, y].centreBottom.position, Vector3.one * 0.15f);
-				Gizmos.DrawCube(squareGrid.squares[x, y].centreLeft.position, Vector3.one * 0.15f);
-
+	private void AssignVertices(Node[] points){
+		for (int i = 0; i < points.Length; i++) {
+			if (points[i].vertexIndex == -1) {
+				points[i].vertexIndex = vertices.Count;
+				vertices.Add(points[i].position);
 			}
 		}
 	}
 
 
+	private void CreateTriangle(Node a, Node b, Node c){
+		triangles.Add(a.vertexIndex);
+		triangles.Add(b.vertexIndex);
+		triangles.Add(c.vertexIndex);
+	}
+
+
+//	private void OnDrawGizmos(){
+//		for (int x = 0; x < squareGrid.squares.GetLength(0); x++) {
+//			for (int y = 0; y < squareGrid.squares.GetLength(1); y++) {
+//				
+//				Gizmos.color = (squareGrid.squares[x, y].topLeft.active) ? Color.black : Color.white;
+//				Gizmos.DrawCube(squareGrid.squares[x, y].topLeft.position, Vector3.one * 0.4f);
+//
+//				Gizmos.color = (squareGrid.squares[x, y].topRight.active) ? Color.black : Color.white;
+//				Gizmos.DrawCube(squareGrid.squares[x, y].topRight.position, Vector3.one * 0.4f);
+//
+//				Gizmos.color = (squareGrid.squares[x, y].bottomLeft.active) ? Color.black : Color.white;
+//				Gizmos.DrawCube(squareGrid.squares[x, y].bottomLeft.position, Vector3.one * 0.4f);
+//
+//				Gizmos.color = (squareGrid.squares[x, y].bottomRight.active) ? Color.black : Color.white;
+//				Gizmos.DrawCube(squareGrid.squares[x, y].bottomRight.position, Vector3.one * 0.4f);
+//
+//				Gizmos.color = Color.gray;
+//				Gizmos.DrawCube(squareGrid.squares[x, y].centreTop.position, Vector3.one * 0.15f);
+//				Gizmos.DrawCube(squareGrid.squares[x, y].centreRight.position, Vector3.one * 0.15f);
+//				Gizmos.DrawCube(squareGrid.squares[x, y].centreBottom.position, Vector3.one * 0.15f);
+//				Gizmos.DrawCube(squareGrid.squares[x, y].centreLeft.position, Vector3.one * 0.15f);
+//
+//			}
+//		}
+//	}
+
+
 	public void GenerateMesh(int[,] map, float squareSize){
 		squareGrid = new SquareGrid(map, squareSize);
+
+		vertices = new List<Vector3>();
+		triangles = new List<int>();
 
 		for (int x = 0; x < squareGrid.squares.GetLength(0); x++) {
 			for (int y = 0; y < squareGrid.squares.GetLength(1); y++) {
 				TriangulateSquare(squareGrid.squares[x, y]);
 			}
 		}
+
+		Mesh mesh = new Mesh();
+		GetComponent<MeshFilter>().mesh = mesh;
+
+		mesh.vertices = vertices.ToArray();
+		mesh.triangles = triangles.ToArray();
+		mesh.RecalculateNormals();
 	}
+
+	#endregion
+
 }

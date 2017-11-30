@@ -35,8 +35,18 @@ public class MapGenerator : MonoBehaviour {
 		map = new int[width, height];
 		RandomFillMap();
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 6; i++) {
 			SmoothMap();
+		}
+
+		int borderSize = 5;
+		int[,] borderMap = new int[width + borderSize * 2, height + borderSize * 2];
+		for (int x = 0; x < borderMap.GetLength(0); x++) {
+			for (int y = 0; y < borderMap.GetLength(1); y++) {
+//				if (x > ){
+//					
+//				}
+			}
 		}
 
 		MeshGenerator meshGen = GetComponent<MeshGenerator>();
